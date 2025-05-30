@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PooPeelator - Lifetime Waste Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f6f9fc 0%, #e9ecef 100%);
+            border-radius: 15px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-size: 1.8em;
+            color: #5a67d8;
+            font-weight: 700;
+        }
+
+        .unit {
+            font-size: 0.6em;
+            color: #718096;
+            font-weight: 400;
+        }
+
+        .fun-fact {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fef3c7;
+            border-radius: 10px;
+            border-left: 4px solid #f59e0b;
+            font-style: italic;
+            color: #92400e;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: relative;
+            height: 400px;
+        }
+
+        .chart-title {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .formula-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+        }
+
+        .formula-section h2 {
+            color: #5a67d8;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        .formula-section h3 {
+            color: #4a5568;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .formula-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-size: 1.1em;
+            color: #2d3748;
+        }
+
+        .stage-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stage-table th, .stage-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stage-table th {
+            background: #5a67d8;
+            color: white;
+            font-weight: 600;
+        }
+
+        .stage-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .stage-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .modifier-list {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modifier-list li {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .modifier-list li:before {
+            content: "•";
+            color: #5a67d8;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .share-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .share-title {
+            font-size: 1.2em;
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 1em;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .share-btn-x {
+            background: #000000;
+        }
+
+        .share-btn-x:hover {
+            background: #1a1a1a;
+        }
+
+        .share-btn-bluesky {
+            background: #00A8E8;
+        }
+
+        .share-btn-bluesky:hover {
+            background: #0090c7;
+        }
+
+        .share-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PooPeelator <span class="emoji">💩</span></h1>
+        <p class="subtitle">Calculate your lifetime waste production!</p>
+        
+        <form id="calculatorForm">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" required placeholder="Enter your name">
+            </div>
+            
+            <div class="form-group">
+                <label for="age">Age (years)</label>
+                <input type="number" id="age" min="0" max="120" required placeholder="Enter your age">
+            </div>
+            
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" required>
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            
+            <div class="input-row">
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label>
+                    <input type="number" id="weight" min="0" max="300" step="0.1" required placeholder="Weight in kg">
+                </div>
+                
+                <div class="form-group">
+                    <label for="height">Height (cm)</label>
+                    <input type="number" id="height" min="0" max="250" required placeholder="Height in cm">
+                </div>
+            </div>
+            
+            <button type="button" id="calculateBtn">Calculate My Lifetime Output! 💩</button>
+        </form>
+        
+        <div id="results" class="results"></div>
+        
+        <div class="formula-section">
+            <h2>🧮 How We Calculate Your Output</h2>
+            
+            <div class="formula-box">
+                Total Output = Σ (Daily Rate × Gender Modifier × BMI Modifier × Days in Life Stage)
+            </div>
+            
+            <h3>📊 Base Daily Production Rates by Life Stage</h3>
+            <table class="stage-table">
+                <thead>
+                    <tr>
+                        <th>Life Stage</th>
+                        <th>Age Range</th>
+                        <th>Poop (g/day)</th>
+                        <th>Pee (ml/day)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Infant</td>
+                        <td>0-1 years</td>
+                        <td>50g</td>
+                        <td>400ml</td>
+                    </tr>
+                    <tr>
+                        <td>Toddler</td>
+                        <td>1-3 years</td>
+                        <td>75g</td>
+                        <td>600ml</td>
+                    </tr>
+                    <tr>
+                        <td>Child</td>
+                        <td>3-12 years</td>
+                        <td>100g</td>
+                        <td>800ml</td>
+                    </tr>
+                    <tr>
+                        <td>Teen</td>
+                        <td>12-18 years</td>
+                        <td>150g</td>
+                        <td>1200ml</td>
+                    </tr>
+                    <tr>
+                        <td>Adult</td>
+                        <td>18-65 years</td>
+                        <td>200g</td>
+                        <td>1500ml</td>
+                    </tr>
+                    <tr>
+                        <td>Elderly</td>
+                        <td>65+ years</td>
+                        <td>175g</td>
+                        <td>1300ml</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>🔧 Adjustment Modifiers</h3>
+            <ul class="modifier-list">
+                <li><strong>Gender Modifiers:</strong>
+                    <ul style="list-style: none; margin-top: 10px;">
+                        <li>👨 Male: Poop ×1.1, Pee ×1.05</li>
+                        <li>👩 Female: Poop ×0.9, Pee ×0.95</li>
+                    </ul>
+                </li>
+                <li><strong>BMI Modifiers:</strong>
+                    <ul style="list-style: none; margin-top: 10px;">
+                        <li>Underweight (BMI &lt; 18.5): ×0.85</li>
+                        <li>Normal (BMI 18.5-25): ×1.0</li>
+                        <li>Overweight (BMI 25-30): ×1.15</li>
+                        <li>Obese (BMI &gt; 30): ×1.3</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <h3>📝 Calculation Steps</h3>
+            <ol class="modifier-list" style="list-style: decimal;">
+                <li>Calculate your BMI: Weight(kg) ÷ Height(m)²</li>
+                <li>For each year of your life, determine the life stage</li>
+                <li>Apply the base daily rate for that stage</li>
+                <li>Multiply by gender and BMI modifiers</li>
+                <li>Multiply by 365.25 days (accounting for leap years)</li>
+                <li>Sum all years together for lifetime total</li>
+            </ol>
+            
+            <div style="text-align: center; margin-top: 25px; color: #666; font-style: italic;">
+                Note: These calculations are based on average human waste production studies and provide estimates for entertainment purposes.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Average daily waste production rates
+        const WASTE_RATES = {
+            poop: {
+                infant: 0.050,      // 50g per day (0-1 year)
+                toddler: 0.075,     // 75g per day (1-3 years)
+                child: 0.100,       // 100g per day (3-12 years)
+                teen: 0.150,        // 150g per day (12-18 years)
+                adult: 0.200,       // 200g per day (18+ years)
+                elderly: 0.175      // 175g per day (65+ years)
+            },
+            pee: {
+                infant: 0.400,      // 400ml per day (0-1 year)
+                toddler: 0.600,     // 600ml per day (1-3 years)
+                child: 0.800,       // 800ml per day (3-12 years)
+                teen: 1.200,        // 1200ml per day (12-18 years)
+                adult: 1.500,       // 1500ml per day (18+ years)
+                elderly: 1.300      // 1300ml per day (65+ years)
+            }
+        };
+
+        // Gender modifiers
+        const GENDER_MODIFIERS = {
+            male: {
+                poop: 1.1,    // Males typically produce 10% more
+                pee: 1.05     // Males typically produce 5% more
+            },
+            female: {
+                poop: 0.9,    // Females typically produce 10% less
+                pee: 0.95     // Females typically produce 5% less
+            }
+        };
+
+        // BMI modifiers (weight affects production)
+        function getBMIModifier(bmi) {
+            if (bmi < 18.5) return 0.85;      // Underweight
+            if (bmi < 25) return 1.0;         // Normal
+            if (bmi < 30) return 1.15;        // Overweight
+            return 1.3;                        // Obese
+        }
+
+        function calculateBMI(weight, height) {
+            const heightInMeters = height / 100;
+            return weight / (heightInMeters * heightInMeters);
+        }
+
+        function calculateLifetimeWaste(age, gender, weight, height) {
+            const bmi = calculateBMI(weight, height);
+            const bmiModifier = getBMIModifier(bmi);
+            const genderModifier = GENDER_MODIFIERS[gender];
+            
+            let totalPoop = 0;
+            let totalPee = 0;
+            
+            // Calculate for each life stage
+            const stages = [
+                { name: 'infant', start: 0, end: 1 },
+                { name: 'toddler', start: 1, end: 3 },
+                { name: 'child', start: 3, end: 12 },
+                { name: 'teen', start: 12, end: 18 },
+                { name: 'adult', start: 18, end: 65 },
+                { name: 'elderly', start: 65, end: age }
+            ];
+            
+            stages.forEach(stage => {
+                if (age > stage.start) {
+                    const yearsInStage = Math.min(age - stage.start, stage.end - stage.start);
+                    const daysInStage = yearsInStage * 365.25; // Account for leap years
+                    
+                    // Apply all modifiers
+                    const poopRate = WASTE_RATES.poop[stage.name] * genderModifier.poop * bmiModifier;
+                    const peeRate = WASTE_RATES.pee[stage.name] * genderModifier.pee * bmiModifier;
+                    
+                    totalPoop += poopRate * daysInStage;
+                    totalPee += peeRate * daysInStage;
+                }
+            });
+            
+            return {
+                poop: totalPoop,
+                pee: totalPee
+            };
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString('en-US', { maximumFractionDigits: 1 });
+        }
+
+        function getRandomFunFact(poopKg, peeLiters) {
+            const facts = [
+                `That's enough poop to fill ${Math.floor(poopKg / 50)} toilet bowls to the brim!`,
+                `Your lifetime pee could fill ${Math.floor(peeLiters / 200)} standard bathtubs!`,
+                `You've produced enough waste to match the weight of ${Math.floor(poopKg / 6)} bowling balls!`,
+                `That's heavier than ${Math.floor(poopKg / 0.5)} bags of rice!`,
+                `Your pee could fill ${Math.floor(peeLiters / 2)} large aquarium tanks!`,
+                `If stacked, your poop would be as tall as ${Math.floor(poopKg / 2)} meters!`,
+                `That's enough pee to water a garden for ${Math.floor(peeLiters / 10)} days!`,
+                `Your total waste weighs more than ${Math.floor((poopKg + peeLiters) / 15)} car tires!`,
+                `You could make ${Math.floor(poopKg / 0.5)} kg of compost with all that poop!`,
+                `That's ${Math.floor(peeLiters / 0.33)} cans of soda worth of pee!`
+            ];
+            return facts[Math.floor(Math.random() * facts.length)];
+        }
+
+        function calculateLifetimeWasteByYear(age, gender, weight, height) {
+            const bmi = calculateBMI(weight, height);
+            const bmiModifier = getBMIModifier(bmi);
+            const genderModifier = GENDER_MODIFIERS[gender];
+            
+            const yearlyData = [];
+            let cumulativePoop = 0;
+            let cumulativePee = 0;
+            
+            // Calculate for each year of life
+            for (let year = 0; year <= age; year++) {
+                let yearlyPoop = 0;
+                let yearlyPee = 0;
+                
+                // Determine which life stage this year falls into
+                let stage;
+                if (year < 1) stage = 'infant';
+                else if (year < 3) stage = 'toddler';
+                else if (year < 12) stage = 'child';
+                else if (year < 18) stage = 'teen';
+                else if (year < 65) stage = 'adult';
+                else stage = 'elderly';
+                
+                // Calculate daily production for this year
+                const dailyPoop = WASTE_RATES.poop[stage] * genderModifier.poop * bmiModifier;
+                const dailyPee = WASTE_RATES.pee[stage] * genderModifier.pee * bmiModifier;
+                
+                // For the current year, calculate partial year if needed
+                const daysInYear = (year === Math.floor(age)) ? ((age % 1) * 365.25) : 365.25;
+                
+                yearlyPoop = dailyPoop * daysInYear;
+                yearlyPee = dailyPee * daysInYear;
+                
+                cumulativePoop += yearlyPoop;
+                cumulativePee += yearlyPee;
+                
+                yearlyData.push({
+                    year: year,
+                    poop: cumulativePoop,
+                    pee: cumulativePee,
+                    total: cumulativePoop + cumulativePee
+                });
+            }
+            
+            return yearlyData;
+        }
+
+        let myChart = null; // Store chart instance globally
+
+        function shareOnX(name, poop, pee) {
+            const text = encodeURIComponent(`I'm ${name} and I've produced ${Math.round(poop)}kg of poop and ${Math.round(pee)}L of pee in my lifetime! 💩 Calculate yours at PooPeelator.com`);
+            const url = `https://twitter.com/intent/tweet?text=${text}`;
+            window.open(url, '_blank', 'width=550,height=420');
+        }
+
+        function shareOnBluesky(name, poop, pee) {
+            const text = encodeURIComponent(`I'm ${name} and I've produced ${Math.round(poop)}kg of poop and ${Math.round(pee)}L of pee in my lifetime! 💩 Calculate yours at PooPeelator.com`);
+            const url = `https://bsky.app/intent/compose?text=${text}`;
+            window.open(url, '_blank', 'width=550,height=420');
+        }
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateBtn = document.getElementById('calculateBtn');
+            if (calculateBtn) {
+                calculateBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Get values and validate
+                    const name = document.getElementById('name').value.trim();
+                    const age = parseFloat(document.getElementById('age').value);
+                    const gender = document.getElementById('gender').value;
+                    const weight = parseFloat(document.getElementById('weight').value);
+                    const height = parseFloat(document.getElementById('height').value);
+                    
+                    // Validate inputs
+                    if (!name || !age || !gender || !weight || !height) {
+                        alert('Please fill in all fields');
+                        return;
+                    }
+                    
+                    try {
+                        const results = calculateLifetimeWaste(age, gender, weight, height);
+                        const yearlyData = calculateLifetimeWasteByYear(age, gender, weight, height);
+                        
+                        const resultsDiv = document.getElementById('results');
+                        resultsDiv.innerHTML = `
+                            <h2 style="text-align: center; color: #5a67d8; margin-bottom: 20px;">
+                                ${name}'s Lifetime Production 📊
+                            </h2>
+                            
+                            <div class="result-item">
+                                <div class="result-label">💩 Total Poop</div>
+                                <div class="result-value">${formatNumber(results.poop)} <span class="unit">kg</span></div>
+                            </div>
+                            
+                            <div class="result-item">
+                                <div class="result-label">💧 Total Pee</div>
+                                <div class="result-value">${formatNumber(results.pee)} <span class="unit">liters</span></div>
+                            </div>
+                            
+                            <div class="result-item">
+                                <div class="result-label">📦 Combined Total</div>
+                                <div class="result-value">${formatNumber(results.poop + results.pee)} <span class="unit">kg</span></div>
+                            </div>
+                            
+                            <div class="fun-fact">
+                                <strong>Fun Fact:</strong> ${getRandomFunFact(results.poop, results.pee)}
+                            </div>
+                            
+                            <div class="share-section">
+                                <h3 class="share-title">🎉 Share Your Results!</h3>
+                                <div class="share-buttons">
+                                    <a href="#" class="share-btn share-btn-x" onclick="shareOnX('${name}', ${results.poop}, ${results.pee}); return false;">
+                                        <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                        </svg>
+                                        Share on X
+                                    </a>
+                                    <a href="#" class="share-btn share-btn-bluesky" onclick="shareOnBluesky('${name}', ${results.poop}, ${results.pee}); return false;">
+                                        <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 7.586l-4.586 4.586-4.586-4.586a1 1 0 111.414-1.414L12 11.344l3.172-3.172a1 1 0 111.414 1.414z"/>
+                                        </svg>
+                                        Share on Bluesky
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <h3 class="chart-title">Your Waste Production Timeline 📈</h3>
+                                <canvas id="wasteChart"></canvas>
+                            </div>
+                        `;
+                        
+                        resultsDiv.style.display = 'block';
+                        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        
+                        // Create the chart
+                        const ctx = document.getElementById('wasteChart').getContext('2d');
+                        
+                        // Destroy previous chart if it exists
+                        if (myChart) {
+                            myChart.destroy();
+                        }
+                        
+                        myChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: yearlyData.map(d => d.year),
+                                datasets: [
+                                    {
+                                        label: 'Poop (kg)',
+                                        data: yearlyData.map(d => d.poop),
+                                        borderColor: '#8B4513',
+                                        backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                                        borderWidth: 3,
+                                        tension: 0.4
+                                    },
+                                    {
+                                        label: 'Pee (L)',
+                                        data: yearlyData.map(d => d.pee),
+                                        borderColor: '#4682B4',
+                                        backgroundColor: 'rgba(70, 130, 180, 0.1)',
+                                        borderWidth: 3,
+                                        tension: 0.4
+                                    },
+                                    {
+                                        label: 'Total (kg)',
+                                        data: yearlyData.map(d => d.total),
+                                        borderColor: '#667eea',
+                                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                        borderWidth: 3,
+                                        tension: 0.4
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                        labels: {
+                                            font: {
+                                                size: 14
+                                            }
+                                        }
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false,
+                                        callbacks: {
+                                            label: function(context) {
+                                                let label = context.dataset.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                label += formatNumber(context.parsed.y);
+                                                return label;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        display: true,
+                                        title: {
+                                            display: true,
+                                            text: 'Age (years)',
+                                            font: {
+                                                size: 14
+                                            }
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
+                                    },
+                                    y: {
+                                        display: true,
+                                        title: {
+                                            display: true,
+                                            text: 'Cumulative Output',
+                                            font: {
+                                                size: 14
+                                            }
+                                        },
+                                        ticks: {
+                                            callback: function(value) {
+                                                return formatNumber(value);
+                                            }
+                                        }
+                                    }
+                                },
+                                interaction: {
+                                    mode: 'nearest',
+                                    axis: 'x',
+                                    intersect: false
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Calculation error:', error);
+                        alert('An error occurred during calculation. Please check your inputs.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
