@@ -346,6 +346,56 @@
             height: 20px;
         }
 
+        .donate-section {
+            margin-top: 25px;
+            padding: 25px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.3);
+        }
+
+        .donate-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .donate-subtitle {
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .donate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #0057B7 0%, #0057B7 50%, #FFD700 50%, #FFD700 100%);
+            background-size: 200% 100%;
+            background-position: 0% 0%;
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .donate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            background-position: 100% 0%;
+        }
+
+        .donate-amount {
+            font-size: 1.3em;
+            font-weight: 800;
+        }
+
         @media (max-width: 480px) {
             .input-row {
                 grid-template-columns: 1fr;
@@ -655,6 +705,13 @@
             window.open(url, '_blank', 'width=550,height=420');
         }
 
+        function donatePoopAmount(poopKg) {
+            // Round the poop amount to the nearest integer for UAH
+            const uahAmount = Math.round(poopKg);
+            const donationUrl = `https://savelife.in.ua/en/donate-en/#donate-army-card`;
+            window.open(donationUrl, '_blank');
+        }
+
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             const calculateBtn = document.getElementById('calculateBtn');
@@ -702,6 +759,16 @@
                             
                             <div class="fun-fact">
                                 <strong>Fun Fact:</strong> ${getRandomFunFact(results.poop, results.pee)}
+                            </div>
+                            
+                            <div class="donate-section">
+                                <h3 class="donate-title">💛💙 Turn Your Poop Into Hope!</h3>
+                                <p class="donate-subtitle">Donate ₴${Math.round(results.poop)} (1 UAH per kg of poop) to help save lives in Ukraine</p>
+                                <a href="#" class="donate-btn" onclick="donatePoopAmount(${results.poop}); return false;">
+                                    <span>Donate</span>
+                                    <span class="donate-amount">₴${Math.round(results.poop)}</span>
+                                    <span>to SaveLife 🇺🇦</span>
+                                </a>
                             </div>
                             
                             <div class="share-section">
